@@ -1,0 +1,9 @@
+repo2video-out/
+__pycache__/
+*.egg-info/
+.hyperframes/
+node_modules/
+.venv/
+.pytest_cache/
+build/
+dist/

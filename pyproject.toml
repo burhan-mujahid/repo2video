@@ -1,0 +1,42 @@
+[project]
+name = "repo2video"
+version = "0.1.0"
+description = "Turn any code repository into a narrated, scored video in five show formats."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Burhan Mujahid" }]
+keywords = ["video", "documentation", "developer-tools", "text-to-speech", "motion-graphics", "github"]
+requires-python = ">=3.11"
+dependencies = [
+  "playwright>=1.40",
+  "kokoro-onnx>=0.4",
+  "misaki[en]>=0.9",
+  "spacy>=3.7",
+  "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
+  "num2words",
+  "soundfile>=0.12",
+  "numpy",
+  "scipy",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyflakes>=3"]
+
+[project.urls]
+Homepage = "https://burhan-mujahid.github.io/repo2video/"
+Repository = "https://github.com/burhan-mujahid/repo2video"
+Changelog = "https://github.com/burhan-mujahid/repo2video/blob/main/CHANGELOG.md"
+Issues = "https://github.com/burhan-mujahid/repo2video/issues"
+
+[project.scripts]
+repo2video = "repo2video.cli:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["repo2video"]
+
+[tool.setuptools.package-data]
+repo2video = ["engine.js", "fonts.js"]

@@ -1,0 +1,34 @@
+name: Bug report
+description: Something renders wrong, crashes, or sounds wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the report. A minimal reproduction makes it much faster to fix.
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: The exact command you ran.
+      placeholder: repo2video owner/repo -m engineering
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Analysis, Script / narration, Pronunciation, Music / sound, Rendering / visuals, Exports, Claude Code plugin, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: Attach a frame (ffmpeg -ss <t> -i video.mp4 -frames:v 1 frame.png) for visual issues.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: repo2video 0.1.0, Python 3.12, macOS 15, Chrome 131

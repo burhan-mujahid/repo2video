@@ -1,0 +1,8 @@
+{
+  "name": "repo2video",
+  "description": "Turn any repo into a narrated video: marketing, engineering, onboarding, release or social. Exports to HyperFrames, Remotion and agent video skills.",
+  "version": "0.1.0",
+  "author": { "name": "Burhan Mujahid", "url": "https://github.com/burhan-mujahid" },
+  "repository": "https://github.com/burhan-mujahid/repo2video",
+  "license": "MIT"
+}

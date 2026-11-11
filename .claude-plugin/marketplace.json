@@ -1,0 +1,12 @@
+{
+  "name": "repo2video",
+  "owner": { "name": "Burhan Mujahid", "url": "https://github.com/burhan-mujahid" },
+  "metadata": { "description": "Turn any repo into a narrated video, in five modes." },
+  "plugins": [
+    {
+      "name": "repo2video",
+      "source": "./plugin",
+      "description": "Turn any repo into a narrated video: marketing, engineering, onboarding, release or social. Exports to HyperFrames, Remotion and agent video skills."
+    }
+  ]
+}

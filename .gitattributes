@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.mp4 binary
+*.m4a binary
+*.gif binary
+*.png binary
+*.jpg binary
+*.woff binary
+repo2video/fonts.js linguist-generated=true
+site/** linguist-documentation=true

@@ -1,0 +1,15 @@
+name: Feature request
+description: A new format, scene, voice rule or export.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to make, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: For a new format, sketch the scenes. For a pronunciation rule, give example sentences.
