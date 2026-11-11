@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>repo2video — Turn any repository into a film</title>
+<meta name="description" content="repo2video reads a codebase and directs a finished video about it: a script built from facts, a voice that reads code correctly, an original score and frame-exact motion design. Five show formats from one command.">
+<meta property="og:title" content="repo2video — Turn any repository into a film">
+<meta property="og:description" content="Five show formats from one command: a trailer, a metro ride through the code, a video-game quest, a news broadcast and a vertical short.">
+<meta property="og:image" content="https://burhan-mujahid.github.io/repo2video/media/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#07080B">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:"Bricolage Grotesque";src:url(fonts/BricolageGrotesque.woff) format("woff");font-weight:200 800;font-display:swap}
+@font-face{font-family:"Space Grotesk";src:url(fonts/SpaceGrotesk.woff) format("woff");font-weight:300 700;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url(fonts/JetBrainsMono.woff) format("woff");font-weight:100 800;font-display:swap}
+:root{
+  --bg:#07080B;--bg2:#0B0D12;--card:#0F1117;--card2:#131620;--line:#1E2129;--line2:#2A2E39;
+  --text:#ECEAE4;--muted:#8A8F9C;--dim:#5C6170;--accent:#F5B544;--accent-ink:#1A1306;
+  --trailer:#F5C451;--metro:#29C5F6;--quest:#3DDC84;--news:#FF4458;--reel:#FF2E8A;
+  --display:"Bricolage Grotesque","Space Grotesk",system-ui,sans-serif;--body:"Space Grotesk",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --r:16px;--max:1180px
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--accent);color:var(--accent-ink)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 28px}
+.mono{font-family:var(--mono)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.025em;margin:0;font-weight:700}
+h2{font-size:clamp(32px,4.2vw,52px);line-height:1.05}
+h3{font-size:20px;letter-spacing:-.01em}
+p{margin:0}
+.lead{font-size:clamp(17px,1.6vw,20px);color:var(--muted);max-width:640px;line-height:1.55}
+section{padding:120px 0;border-top:1px solid var(--line)}
+.section-head{display:grid;gap:18px;margin-bottom:56px;max-width:760px}
+
+/* nav */
+nav{position:sticky;top:0;z-index:50;background:rgba(7,8,11,.72);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid rgba(30,33,41,.7)}
+nav .wrap{display:flex;align-items:center;height:64px;gap:32px}
+.brand{display:flex;align-items:center;gap:10px;font:700 17px var(--display);letter-spacing:-.02em}
+.brand img{width:28px;height:28px}
+.brand em{font-style:normal;color:var(--accent)}
+.pill{font:500 11px var(--mono);color:var(--muted);border:1px solid var(--line2);border-radius:99px;padding:3px 8px}
+.links{display:flex;gap:26px;font-size:14px;color:var(--muted);margin-left:8px}
+.links a:hover{color:var(--text)}
+.nav-cta{margin-left:auto;display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 16px;border-radius:10px;font:600 14px var(--body);border:1px solid var(--line2);background:var(--card);transition:border-color .2s,background .2s,transform .2s;cursor:pointer;color:var(--text)}
+.btn:hover{border-color:#3a3f4c;background:var(--card2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:#ffc45e}
+.btn svg{width:17px;height:17px}
+
+/* hero */
+.hero{position:relative;padding:96px 0 40px;overflow:hidden;border-top:0}
+.hero:before{content:"";position:absolute;inset:-200px -20% auto;height:720px;background:radial-gradient(48% 50% at 50% 30%,rgba(245,181,68,.16),transparent 70%);pointer-events:none}
+.hero:after{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(70% 55% at 50% 20%,#000 0%,transparent 75%);-webkit-mask-image:radial-gradient(70% 55% at 50% 20%,#000 0%,transparent 75%);opacity:.45;pointer-events:none}
+.hero .wrap{position:relative;z-index:1;display:grid;justify-items:center;text-align:center;gap:26px}
+.hero h1{font-size:clamp(44px,7.4vw,92px);line-height:.98;letter-spacing:-.045em;max-width:980px}
+.hero h1 span{background:linear-gradient(100deg,#fff4d6 10%,var(--accent) 55%,#e08a2b 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lead{text-align:center;max-width:720px}
+.install{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:6px 6px 6px 18px;font:14px var(--mono);max-width:100%}
+.install code{white-space:nowrap;overflow:auto;color:var(--text)}
+.install code b{color:var(--accent);font-weight:500}
+.copy{height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--line2);background:var(--bg2);color:var(--muted);font:500 12px var(--mono);cursor:pointer;flex:none}
+.copy:hover{color:var(--text)}
+.ctas{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.player{position:relative;width:100%;max-width:1040px;margin-top:34px;border-radius:20px;padding:10px;background:linear-gradient(180deg,#1a1d26,#0d0f14);border:1px solid var(--line2);box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.02) inset}
+.player video{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;background:#000}
+.player .bar{display:flex;justify-content:space-between;align-items:center;padding:12px 6px 2px;font:12px var(--mono);color:var(--dim)}
+.unmute{position:absolute;right:26px;top:26px;height:34px;padding:0 12px;border-radius:9px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);color:#fff;font:600 12px var(--body);cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;gap:8px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:72px;width:100%}
+.stats div{padding:22px 20px;border-right:1px solid var(--line);text-align:left}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font:700 34px/1 var(--display);letter-spacing:-.03em}
+.stats span{font-size:13px;color:var(--muted)}
+
+/* formats */
+.formats{display:grid;grid-template-columns:340px 1fr;gap:28px;align-items:start}
+.tabs{display:grid;gap:8px}
+.tab{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;text-align:left;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer;font:inherit;transition:background .2s,border-color .2s}
+.tab:hover{background:var(--card)}
+.tab[aria-selected=true]{background:var(--card);border-color:var(--line2);box-shadow:inset 3px 0 0 var(--c)}
+.tab i{grid-row:span 2;width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 18px var(--c)}
+.tab b{font:700 17px var(--display);letter-spacing:-.01em}
+.tab small{color:var(--muted);font:12px var(--mono)}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.stage video{display:block;width:100%;background:#000;aspect-ratio:16/9}
+.stage.vertical .media{display:grid;place-items:center;background:#000}
+.stage.vertical video{width:auto;height:560px;aspect-ratio:9/16}
+.stage .info{padding:24px 26px 26px;display:grid;grid-template-columns:1.2fr 1fr;gap:28px}
+.stage .info p{color:var(--muted);font-size:15px}
+.stage ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px}
+.stage li{padding-left:18px;position:relative;color:#cfccc4}
+.stage li:before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:2px;background:var(--c)}
+.cmd{margin-top:14px;font:13px var(--mono);color:var(--muted);background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;display:inline-block}
+.also{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
+.also figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.also video{display:block;width:100%;aspect-ratio:16/9;background:#000}
+.also figcaption{padding:14px 18px;font-size:14px;color:var(--muted);display:flex;justify-content:space-between;gap:12px}
+.also figcaption b{color:var(--text);font-weight:600}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;position:relative}
+.step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 18px;position:relative;min-height:230px}
+.step:not(:last-child):after{content:"";position:absolute;right:-12px;top:34px;width:12px;height:1px;background:var(--line2)}
+.step .n{font:500 11px var(--mono);color:var(--accent);letter-spacing:.1em}
+.step h3{margin:10px 0 4px}
+.step code{font:12px var(--mono);color:var(--dim)}
+.step p{font-size:13.5px;color:var(--muted);margin-top:12px;line-height:1.55}
+.contract{margin-top:28px;display:grid;grid-template-columns:1fr 1.15fr;gap:28px;align-items:stretch}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+.panel h3{margin-bottom:10px}
+.panel p{color:var(--muted);font-size:15px}
+pre{margin:0;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:20px 22px;overflow:auto;font:13px/1.65 var(--mono);color:#cfd3dc}
+pre .k{color:#c792ea}pre .s{color:#c3e88d}pre .c{color:#5f6577;font-style:italic}pre .n{color:#f78c6c}pre .p{color:var(--accent)}
+
+/* voice */
+.split{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:start}
+.layers{display:grid;gap:14px;margin-top:30px}
+.layer{display:grid;grid-template-columns:32px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+.layer b{font:500 12px var(--mono);color:var(--accent);padding-top:3px}
+.layer h3{font-size:17px;margin-bottom:4px}
+.layer p{font-size:14.5px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:0 14px 12px;border-bottom:1px solid var(--line2)}
+td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{font-family:var(--mono);font-size:13px;color:#cfd3dc}
+td.say{color:var(--text)}
+td.say em{font-style:normal;color:var(--accent)}
+.listen{margin-top:22px;display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.play{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);display:grid;place-items:center;cursor:pointer;flex:none}
+.play svg{width:18px;height:18px}
+.listen .t{font-size:14px}
+.listen .t small{display:block;color:var(--muted);font-size:12.5px}
+.progress{flex:1;height:4px;border-radius:2px;background:var(--line2);overflow:hidden;min-width:60px}
+.progress i{display:block;height:100%;width:0;background:var(--accent)}
+
+/* sound */
+.scores{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.score{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:10px}
+.score .top{display:flex;justify-content:space-between;align-items:baseline}
+.score b{font:700 17px var(--display)}
+.score small{font:12px var(--mono);color:var(--muted)}
+.score svg{width:100%;height:56px;display:block}
+.score p{font-size:13px;color:var(--muted);line-height:1.5}
+.mix{margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mix div{border:1px solid var(--line);border-radius:14px;padding:18px}
+.mix b{font:700 24px var(--display);letter-spacing:-.02em;display:block}
+.mix span{font-size:13px;color:var(--muted)}
+
+/* engine + integrations */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.feat h3{font-size:17px;margin-bottom:8px}
+.feat p{font-size:14px;color:var(--muted)}
+.feat .tag{display:inline-block;margin-top:14px;font:12px var(--mono);color:var(--dim);border:1px solid var(--line2);border-radius:6px;padding:3px 8px}
+
+/* docs */
+.docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.docs h3{margin:0 0 12px;font-size:16px;color:var(--muted);font-family:var(--mono);font-weight:500;letter-spacing:0}
+.opts td:first-child{white-space:nowrap}
+.opts td:last-child{color:var(--muted)}
+
+footer{border-top:1px solid var(--line);padding:56px 0 64px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+footer .f-links{display:flex;gap:22px}
+footer .f-links a:hover{color:var(--text)}
+
+@media (max-width:1040px){
+  .links{display:none}
+  .formats,.split,.contract,.docs{grid-template-columns:1fr}
+  .pipe{grid-template-columns:repeat(3,1fr)}
+  .step:after{display:none}
+  .scores{grid-template-columns:repeat(2,1fr)}
+  .grid3,.grid4,.mix{grid-template-columns:repeat(2,1fr)}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stats div{border-bottom:1px solid var(--line)}
+  .stage .info{grid-template-columns:1fr}
+  .stage.vertical video{height:480px}
+}
+@media (max-width:640px){
+  .pipe,.grid3,.grid4,.mix,.scores,.also{grid-template-columns:1fr}
+  section{padding:84px 0}
+  .install{font-size:12px}
+  .nav-cta .btn:not(.primary){display:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<nav aria-label="Primary">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="logo.svg" alt=""><span>repo<em>2</em>video</span></a>
+    <span class="pill">v0.1.0</span>
+    <div class="links">
+      <a href="#formats">Formats</a><a href="#pipeline">Pipeline</a><a href="#voice">Voice</a><a href="#sound">Sound</a><a href="#integrations">Integrations</a><a href="#docs">Docs</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn" href="https://github.com/burhan-mujahid/repo2video/releases/tag/v0.1.0">Release notes</a>
+      <a class="btn primary" href="https://github.com/burhan-mujahid/repo2video">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="eyebrow">Open source &middot; MIT &middot; v0.1.0</span>
+    <h1>Turn any repository<br>into a <span>film.</span></h1>
+    <p class="lead">repo2video reads a codebase and directs a finished video about it: a script built only from facts in the repository, a voice that reads code the way engineers say it, an original score, and frame-exact motion design. Five show formats from one command.</p>
+    <div class="install" role="group" aria-label="Install command">
+      <code><b>$</b> pip install git+https://github.com/burhan-mujahid/repo2video</code>
+      <button class="copy" data-copy="pip install git+https://github.com/burhan-mujahid/repo2video">Copy</button>
+    </div>
+    <div class="ctas">
+      <a class="btn primary" href="#formats">Watch the samples</a>
+      <a class="btn" href="#docs">Read the docs</a>
+    </div>
+    <div class="player">
+      <video id="hero-video" src="media/sizzle.mp4" poster="media/sizzle.jpg" autoplay muted loop playsinline preload="auto"></video>
+      <button class="unmute" id="unmute" aria-label="Turn sound on">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+        Sound on
+      </button>
+      <div class="bar"><span>Five formats rendered from rtk-ai/rtk</span><span>No hand edits</span></div>
+    </div>
+    <div class="stats">
+      <div><b>5</b><span>show formats</span></div>
+      <div><b>30</b><span>scene types</span></div>
+      <div><b>5</b><span>original scores</span></div>
+      <div><b>19</b><span>synthesized sound effects</span></div>
+      <div><b>0</b><span>samples, stock clips or hand edits</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="formats">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Formats</span>
+      <h2>One repository. Five different films.</h2>
+      <p class="lead">Each mode is a complete show with its own script, visual language, voice, score and caption style. All five samples below were rendered from the same repository with a single command.</p>
+    </div>
+    <div class="formats">
+      <div class="tabs" role="tablist" aria-label="Show formats">
+        <button class="tab" role="tab" aria-selected="true" data-f="0" style="--c:var(--trailer)"><i></i><b>Trailer</b><small>-m marketing</small></button>
+        <button class="tab" role="tab" aria-selected="false" data-f="1" style="--c:var(--metro)"><i></i><b>Code Metro</b><small>-m engineering</small></button>
+        <button class="tab" role="tab" aria-selected="false" data-f="2" style="--c:var(--quest)"><i></i><b>The Quest</b><small>-m onboarding</small></button>
+        <button class="tab" role="tab" aria-selected="false" data-f="3" style="--c:var(--news)"><i></i><b>Breaking News</b><small>-m release</small></button>
+        <button class="tab" role="tab" aria-selected="false" data-f="4" style="--c:var(--reel)"><i></i><b>Vertical Short</b><small>-m social</small></button>
+      </div>
+      <div class="stage" id="stage" style="--c:var(--trailer)">
+        <div class="media"><video id="fv" controls playsinline preload="none"></video></div>
+        <div class="info">
+          <div><h3 id="ft"></h3><p id="fd" style="margin-top:8px"></p><span class="cmd" id="fc"></span></div>
+          <ul id="fl"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="also">
+      <figure>
+        <video src="media/commander-onboarding.mp4" poster="media/commander-onboarding.jpg" controls playsinline preload="none"></video>
+        <figcaption><span><b>tj/commander.js</b> &middot; onboarding</span><span class="mono">JavaScript</span></figcaption>
+      </figure>
+      <figure>
+        <video src="media/autoresearch-trailer.mp4" poster="media/autoresearch-trailer.jpg" controls playsinline preload="none"></video>
+        <figcaption><span><b>karpathy/autoresearch</b> &middot; marketing</span><span class="mono">Python</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Pipeline</span>
+      <h2>From source tree to final cut.</h2>
+      <p class="lead">Six stages, each with one job. Facts flow in one direction, and the story file in the middle is the contract every renderer reads.</p>
+    </div>
+    <div class="pipe">
+      <div class="step"><span class="n">01</span><h3>Analyze</h3><code>analyze.py</code><p>Reads the README, manifests, lockfiles, CHANGELOG and git history. Finds the entry point, traces real function calls and builds the import graph.</p></div>
+      <div class="step"><span class="n">02</span><h3>Plan</h3><code>plan.py</code><p>Turns facts into a show: scenes, narration and on-screen text, each line traceable to a file, line range or commit range.</p></div>
+      <div class="step"><span class="n">03</span><h3>Speak</h3><code>speech.py</code><p>Normalizes names, numbers and units, resolves heteronyms by context, and synthesizes Kokoro speech with per-word timings.</p></div>
+      <div class="step"><span class="n">04</span><h3>Lay out</h3><code>engine.js</code><p>Quantizes scene cuts to the beat, aligns the drop to a bar, and emits a sound cue for every visible action.</p></div>
+      <div class="step"><span class="n">05</span><h3>Score</h3><code>sound.py</code><p>Synthesizes the score and effects from oscillators and filters, ducks the music under the voice and normalizes loudness.</p></div>
+      <div class="step"><span class="n">06</span><h3>Render</h3><code>render.py</code><p>Seeks a headless browser frame by frame and encodes H.264 with AAC, plus a README-sized GIF.</p></div>
+    </div>
+    <div class="contract">
+      <div class="panel">
+        <h3>Facts, not filler</h3>
+        <p>Every claim in a video comes from the repository. Code on screen is copied verbatim with its path and line range. Numbers come from the README or from git. When text has to be shortened it is shown on screen, but the narrator only reads complete clauses.</p>
+        <p style="margin-top:14px">The story file is plain JSON. Edit any line and render again; the picture, captions and sound follow the new timing automatically.</p>
+      </div>
+<pre><span class="c">// story.json (abridged)</span>
+{
+  <span class="k">"mode"</span>: <span class="s">"engineering"</span>, <span class="k">"format"</span>: <span class="s">"metro"</span>,
+  <span class="k">"music"</span>: <span class="s">"synthwave"</span>, <span class="k">"bpm"</span>: <span class="n">100</span>, <span class="k">"voice"</span>: <span class="s">"am_michael"</span>,
+  <span class="k">"scenes"</span>: [
+    { <span class="k">"type"</span>: <span class="s">"stop"</span>, <span class="k">"symbol"</span>: <span class="s">"entry"</span>,
+      <span class="k">"path"</span>: <span class="s">"src/lib.rs"</span>, <span class="k">"start"</span>: <span class="n">2317</span>, <span class="k">"end"</span>: <span class="n">2330</span>,
+      <span class="k">"highlight"</span>: [<span class="n">10</span>],
+      <span class="k">"evidence"</span>: <span class="s">"src/lib.rs:2317-2330"</span>,
+      <span class="k">"narration"</span>: <span class="s">"Next stop: `entry()`, in `src/lib.rs`."</span> }
+  ]
+}</pre>
+    </div>
+  </div>
+</section>
+
+<section id="voice">
+  <div class="wrap split">
+    <div>
+      <div class="section-head" style="margin-bottom:0">
+        <span class="eyebrow">Voice</span>
+        <h2>A narrator that reads code correctly.</h2>
+        <p class="lead">Text-to-speech engines mispronounce code. repo2video puts three layers in front of the voice so file names, versions and ambiguous words come out the way an engineer would say them.</p>
+      </div>
+      <div class="layers">
+        <div class="layer"><b>01</b><div><h3>Names are read with their symbols</h3><p>Paths, files, identifiers, flags and package names are detected and verbalized. Punctuation in ordinary prose stays silent.</p></div></div>
+        <div class="layer"><b>02</b><div><h3>Heteronyms follow the sentence</h3><p>Part-of-speech tags from spaCy drive misaki's pronunciation dictionary, and rule overrides fix what taggers miss, such as "ship it live" and "have you read".</p></div></div>
+        <div class="layer"><b>03</b><div><h3>Numbers, units and jargon</h3><p>Versions, ranges, units and approximations become words, and a technical lexicon covers terms like config, README, JSON and nginx.</p></div></div>
+      </div>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Written</th><th>Spoken</th></tr></thead>
+        <tbody>
+          <tr><td>brief.md</td><td class="say">brief <em>dot</em> M D</td></tr>
+          <tr><td>main/skills</td><td class="say">main <em>slash</em> skills</td></tr>
+          <tr><td>register_all()</td><td class="say">register <em>underscore</em> all</td></tr>
+          <tr><td>github.com/rtk-ai/rtk</td><td class="say">github <em>dot</em> com <em>slash</em> R T K <em>dash</em> A I <em>slash</em> R T K</td></tr>
+          <tr><td>Your app goes live.</td><td class="say">goes <em>/laɪv/</em></td></tr>
+          <tr><td>We live in the terminal.</td><td class="say">we <em>/lɪv/</em></td></tr>
+          <tr><td>Have you read it?</td><td class="say">have you <em>/rɛd/</em></td></tr>
+          <tr><td>Export the video. The export is ready.</td><td class="say">ex<em>PORT</em> the video. The <em>EX</em>port</td></tr>
+          <tr><td>v0.49.0 in 25 ms, 10x faster</td><td class="say">version 0 <em>point</em> 49 <em>point</em> 0 in 25 <em>milliseconds</em>, 10 <em>times</em> faster</td></tr>
+        </tbody>
+      </table>
+      <div class="listen">
+        <button class="play" id="play" aria-label="Play pronunciation sample"><svg viewBox="0 0 24 24" fill="#1A1306"><path id="playicon" d="M7 4l13 8-13 8z"/></svg></button>
+        <div class="t">Pronunciation sample<small>23 seconds, every case in this table</small></div>
+        <div class="progress"><i id="prog"></i></div>
+        <audio id="pron" src="media/pronunciation.m4a" preload="none"></audio>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sound">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Sound</span>
+      <h2>An original score for every format.</h2>
+      <p class="lead">No samples and no stock music. Every note and effect is synthesized from oscillators, envelopes and filters in NumPy, so each video ships with music that is entirely its own and free of licensing questions.</p>
+    </div>
+    <div class="scores">
+      <div class="score" style="--c:var(--trailer)"><div class="top"><b>Trailer</b><small>92 BPM</small></div><svg viewBox="0 0 300 56" preserveAspectRatio="none" fill="var(--c)" aria-hidden="true"><rect x="0.0" y="17.8" width="1.5" height="20.5" rx=".75"/><rect x="2.5" y="20.6" width="1.5" height="14.9" rx=".75"/><rect x="5.0" y="22.6" width="1.5" height="10.8" rx=".75"/><rect x="7.5" y="24.8" width="1.5" height="6.3" rx=".75"/><rect x="10.0" y="25.1" width="1.5" height="5.8" rx=".75"/><rect x="12.5" y="25.3" width="1.5" height="5.5" rx=".75"/><rect x="15.0" y="25.9" width="1.5" height="4.3" rx=".75"/><rect x="17.5" y="25.7" width="1.5" height="4.5" rx=".75"/><rect x="20.0" y="26.1" width="1.5" height="3.7" rx=".75"/><rect x="22.5" y="25.9" width="1.5" height="4.2" rx=".75"/><rect x="25.0" y="25.8" width="1.5" height="4.4" rx=".75"/><rect x="27.5" y="19.2" width="1.5" height="17.5" rx=".75"/><rect x="30.0" y="20.1" width="1.5" height="15.7" rx=".75"/><rect x="32.5" y="22.6" width="1.5" height="10.7" rx=".75"/><rect x="35.0" y="23.4" width="1.5" height="9.2" rx=".75"/><rect x="37.5" y="24.6" width="1.5" height="6.7" rx=".75"/><rect x="40.0" y="25.2" width="1.5" height="5.5" rx=".75"/><rect x="42.5" y="25.7" width="1.5" height="4.7" rx=".75"/><rect x="45.0" y="26.4" width="1.5" height="3.2" rx=".75"/><rect x="47.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="50.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="52.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="55.0" y="17.3" width="1.5" height="21.3" rx=".75"/><rect x="57.5" y="19.3" width="1.5" height="17.3" rx=".75"/><rect x="60.0" y="21.5" width="1.5" height="12.9" rx=".75"/><rect x="62.5" y="24.0" width="1.5" height="8.0" rx=".75"/><rect x="65.0" y="24.0" width="1.5" height="8.0" rx=".75"/><rect x="67.5" y="24.5" width="1.5" height="6.9" rx=".75"/><rect x="70.0" y="25.3" width="1.5" height="5.4" rx=".75"/><rect x="72.5" y="24.1" width="1.5" height="7.7" rx=".75"/><rect x="75.0" y="23.7" width="1.5" height="8.6" rx=".75"/><rect x="77.5" y="23.3" width="1.5" height="9.3" rx=".75"/><rect x="80.0" y="22.5" width="1.5" height="11.1" rx=".75"/><rect x="82.5" y="16.4" width="1.5" height="23.2" rx=".75"/><rect x="85.0" y="4.4" width="1.5" height="47.2" rx=".75"/><rect x="87.5" y="9.8" width="1.5" height="36.3" rx=".75"/><rect x="90.0" y="13.3" width="1.5" height="29.5" rx=".75"/><rect x="92.5" y="17.4" width="1.5" height="21.2" rx=".75"/><rect x="95.0" y="16.8" width="1.5" height="22.4" rx=".75"/><rect x="97.5" y="20.2" width="1.5" height="15.6" rx=".75"/><rect x="100.0" y="21.3" width="1.5" height="13.5" rx=".75"/><rect x="102.5" y="22.5" width="1.5" height="11.0" rx=".75"/><rect x="105.0" y="23.5" width="1.5" height="9.0" rx=".75"/><rect x="107.5" y="24.4" width="1.5" height="7.3" rx=".75"/><rect x="110.0" y="7.9" width="1.5" height="40.3" rx=".75"/><rect x="112.5" y="10.5" width="1.5" height="35.0" rx=".75"/><rect x="115.0" y="19.3" width="1.5" height="17.5" rx=".75"/><rect x="117.5" y="14.7" width="1.5" height="26.5" rx=".75"/><rect x="120.0" y="19.9" width="1.5" height="16.2" rx=".75"/><rect x="122.5" y="23.7" width="1.5" height="8.6" rx=".75"/><rect x="125.0" y="2.8" width="1.5" height="50.5" rx=".75"/><rect x="127.5" y="11.7" width="1.5" height="32.6" rx=".75"/><rect x="130.0" y="20.3" width="1.5" height="15.4" rx=".75"/><rect x="132.5" y="16.9" width="1.5" height="22.2" rx=".75"/><rect x="135.0" y="18.5" width="1.5" height="18.9" rx=".75"/><rect x="137.5" y="10.9" width="1.5" height="34.2" rx=".75"/><rect x="140.0" y="6.4" width="1.5" height="43.3" rx=".75"/><rect x="142.5" y="16.7" width="1.5" height="22.5" rx=".75"/><rect x="145.0" y="14.2" width="1.5" height="27.5" rx=".75"/><rect x="147.5" y="17.0" width="1.5" height="22.0" rx=".75"/><rect x="150.0" y="24.6" width="1.5" height="6.9" rx=".75"/><rect x="152.5" y="2.4" width="1.5" height="51.2" rx=".75"/><rect x="155.0" y="12.5" width="1.5" height="31.0" rx=".75"/><rect x="157.5" y="20.6" width="1.5" height="14.7" rx=".75"/><rect x="160.0" y="18.0" width="1.5" height="19.9" rx=".75"/><rect x="162.5" y="20.2" width="1.5" height="15.7" rx=".75"/><rect x="165.0" y="24.3" width="1.5" height="7.3" rx=".75"/><rect x="167.5" y="8.7" width="1.5" height="38.6" rx=".75"/><rect x="170.0" y="16.7" width="1.5" height="22.6" rx=".75"/><rect x="172.5" y="20.0" width="1.5" height="15.9" rx=".75"/><rect x="175.0" y="17.6" width="1.5" height="20.8" rx=".75"/><rect x="177.5" y="23.7" width="1.5" height="8.5" rx=".75"/><rect x="180.0" y="2.7" width="1.5" height="50.6" rx=".75"/><rect x="182.5" y="9.3" width="1.5" height="37.3" rx=".75"/><rect x="185.0" y="19.6" width="1.5" height="16.8" rx=".75"/><rect x="187.5" y="16.5" width="1.5" height="23.0" rx=".75"/><rect x="190.0" y="18.2" width="1.5" height="19.6" rx=".75"/><rect x="192.5" y="23.3" width="1.5" height="9.4" rx=".75"/><rect x="195.0" y="7.2" width="1.5" height="41.5" rx=".75"/><rect x="197.5" y="15.7" width="1.5" height="24.7" rx=".75"/><rect x="200.0" y="21.8" width="1.5" height="12.3" rx=".75"/><rect x="202.5" y="18.3" width="1.5" height="19.3" rx=".75"/><rect x="205.0" y="22.0" width="1.5" height="12.1" rx=".75"/><rect x="207.5" y="2.2" width="1.5" height="51.7" rx=".75"/><rect x="210.0" y="6.8" width="1.5" height="42.5" rx=".75"/><rect x="212.5" y="18.2" width="1.5" height="19.7" rx=".75"/><rect x="215.0" y="16.4" width="1.5" height="23.3" rx=".75"/><rect x="217.5" y="19.6" width="1.5" height="16.9" rx=".75"/><rect x="220.0" y="24.4" width="1.5" height="7.2" rx=".75"/><rect x="222.5" y="10.0" width="1.5" height="35.9" rx=".75"/><rect x="225.0" y="14.3" width="1.5" height="27.3" rx=".75"/><rect x="227.5" y="21.0" width="1.5" height="13.9" rx=".75"/><rect x="230.0" y="16.1" width="1.5" height="23.8" rx=".75"/><rect x="232.5" y="21.2" width="1.5" height="13.5" rx=".75"/><rect x="235.0" y="24.3" width="1.5" height="7.3" rx=".75"/><rect x="237.5" y="2.0" width="1.5" height="52.0" rx=".75"/><rect x="240.0" y="16.6" width="1.5" height="22.8" rx=".75"/><rect x="242.5" y="17.9" width="1.5" height="20.1" rx=".75"/><rect x="245.0" y="13.4" width="1.5" height="29.3" rx=".75"/><rect x="247.5" y="21.4" width="1.5" height="13.2" rx=".75"/><rect x="250.0" y="9.5" width="1.5" height="37.0" rx=".75"/><rect x="252.5" y="14.2" width="1.5" height="27.7" rx=".75"/><rect x="255.0" y="19.3" width="1.5" height="17.3" rx=".75"/><rect x="257.5" y="17.1" width="1.5" height="21.8" rx=".75"/><rect x="260.0" y="21.8" width="1.5" height="12.4" rx=".75"/><rect x="262.5" y="25.3" width="1.5" height="5.4" rx=".75"/><rect x="265.0" y="5.3" width="1.5" height="45.4" rx=".75"/><rect x="267.5" y="17.1" width="1.5" height="21.9" rx=".75"/><rect x="270.0" y="23.0" width="1.5" height="10.0" rx=".75"/><rect x="272.5" y="18.8" width="1.5" height="18.5" rx=".75"/><rect x="275.0" y="23.4" width="1.5" height="9.1" rx=".75"/><rect x="277.5" y="17.2" width="1.5" height="21.5" rx=".75"/><rect x="280.0" y="19.8" width="1.5" height="16.3" rx=".75"/><rect x="282.5" y="23.7" width="1.5" height="8.5" rx=".75"/><rect x="285.0" y="24.7" width="1.5" height="6.7" rx=".75"/><rect x="287.5" y="25.7" width="1.5" height="4.7" rx=".75"/><rect x="290.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="292.5" y="23.6" width="1.5" height="8.9" rx=".75"/><rect x="295.0" y="26.5" width="1.5" height="3.0" rx=".75"/><rect x="297.5" y="26.8" width="1.5" height="2.4" rx=".75"/></svg><p>Braams, taiko toms and a riser into an impact on the title reveal, then a driving pulse.</p></div>
+      <div class="score" style="--c:var(--metro)"><div class="top"><b>Synthwave</b><small>100 BPM</small></div><svg viewBox="0 0 300 56" preserveAspectRatio="none" fill="var(--c)" aria-hidden="true"><rect x="0.0" y="19.3" width="1.5" height="17.5" rx=".75"/><rect x="2.5" y="24.7" width="1.5" height="6.7" rx=".75"/><rect x="5.0" y="19.0" width="1.5" height="18.0" rx=".75"/><rect x="7.5" y="22.0" width="1.5" height="11.9" rx=".75"/><rect x="10.0" y="25.0" width="1.5" height="5.9" rx=".75"/><rect x="12.5" y="18.3" width="1.5" height="19.4" rx=".75"/><rect x="15.0" y="23.3" width="1.5" height="9.4" rx=".75"/><rect x="17.5" y="20.0" width="1.5" height="15.9" rx=".75"/><rect x="20.0" y="21.6" width="1.5" height="12.8" rx=".75"/><rect x="22.5" y="24.8" width="1.5" height="6.4" rx=".75"/><rect x="25.0" y="19.1" width="1.5" height="17.8" rx=".75"/><rect x="27.5" y="22.9" width="1.5" height="10.2" rx=".75"/><rect x="30.0" y="19.1" width="1.5" height="17.8" rx=".75"/><rect x="32.5" y="20.1" width="1.5" height="15.9" rx=".75"/><rect x="35.0" y="23.8" width="1.5" height="8.4" rx=".75"/><rect x="37.5" y="19.5" width="1.5" height="17.0" rx=".75"/><rect x="40.0" y="23.1" width="1.5" height="9.9" rx=".75"/><rect x="42.5" y="26.0" width="1.5" height="4.0" rx=".75"/><rect x="45.0" y="19.2" width="1.5" height="17.6" rx=".75"/><rect x="47.5" y="25.0" width="1.5" height="6.1" rx=".75"/><rect x="50.0" y="19.3" width="1.5" height="17.3" rx=".75"/><rect x="52.5" y="22.3" width="1.5" height="11.3" rx=".75"/><rect x="55.0" y="26.3" width="1.5" height="3.4" rx=".75"/><rect x="57.5" y="19.1" width="1.5" height="17.9" rx=".75"/><rect x="60.0" y="23.7" width="1.5" height="8.5" rx=".75"/><rect x="62.5" y="18.1" width="1.5" height="19.8" rx=".75"/><rect x="65.0" y="20.3" width="1.5" height="15.4" rx=".75"/><rect x="67.5" y="25.2" width="1.5" height="5.6" rx=".75"/><rect x="70.0" y="18.9" width="1.5" height="18.1" rx=".75"/><rect x="72.5" y="23.1" width="1.5" height="9.9" rx=".75"/><rect x="75.0" y="18.8" width="1.5" height="18.3" rx=".75"/><rect x="77.5" y="19.7" width="1.5" height="16.5" rx=".75"/><rect x="80.0" y="24.7" width="1.5" height="6.7" rx=".75"/><rect x="82.5" y="19.4" width="1.5" height="17.2" rx=".75"/><rect x="85.0" y="22.2" width="1.5" height="11.5" rx=".75"/><rect x="87.5" y="25.7" width="1.5" height="4.5" rx=".75"/><rect x="90.0" y="19.3" width="1.5" height="17.3" rx=".75"/><rect x="92.5" y="24.6" width="1.5" height="6.8" rx=".75"/><rect x="95.0" y="19.6" width="1.5" height="16.8" rx=".75"/><rect x="97.5" y="21.6" width="1.5" height="12.7" rx=".75"/><rect x="100.0" y="26.2" width="1.5" height="3.7" rx=".75"/><rect x="102.5" y="10.9" width="1.5" height="34.2" rx=".75"/><rect x="105.0" y="17.1" width="1.5" height="21.7" rx=".75"/><rect x="107.5" y="17.0" width="1.5" height="22.0" rx=".75"/><rect x="110.0" y="18.9" width="1.5" height="18.2" rx=".75"/><rect x="112.5" y="23.0" width="1.5" height="9.9" rx=".75"/><rect x="115.0" y="5.2" width="1.5" height="45.5" rx=".75"/><rect x="117.5" y="16.4" width="1.5" height="23.3" rx=".75"/><rect x="120.0" y="17.7" width="1.5" height="20.5" rx=".75"/><rect x="122.5" y="17.6" width="1.5" height="20.7" rx=".75"/><rect x="125.0" y="23.3" width="1.5" height="9.5" rx=".75"/><rect x="127.5" y="10.9" width="1.5" height="34.2" rx=".75"/><rect x="130.0" y="14.6" width="1.5" height="26.8" rx=".75"/><rect x="132.5" y="20.5" width="1.5" height="15.0" rx=".75"/><rect x="135.0" y="16.1" width="1.5" height="23.9" rx=".75"/><rect x="137.5" y="23.3" width="1.5" height="9.4" rx=".75"/><rect x="140.0" y="3.5" width="1.5" height="48.9" rx=".75"/><rect x="142.5" y="12.6" width="1.5" height="30.9" rx=".75"/><rect x="145.0" y="18.7" width="1.5" height="18.6" rx=".75"/><rect x="147.5" y="16.9" width="1.5" height="22.2" rx=".75"/><rect x="150.0" y="23.7" width="1.5" height="8.6" rx=".75"/><rect x="152.5" y="8.7" width="1.5" height="38.7" rx=".75"/><rect x="155.0" y="10.8" width="1.5" height="34.5" rx=".75"/><rect x="157.5" y="19.1" width="1.5" height="17.7" rx=".75"/><rect x="160.0" y="16.9" width="1.5" height="22.1" rx=".75"/><rect x="162.5" y="22.2" width="1.5" height="11.6" rx=".75"/><rect x="165.0" y="3.5" width="1.5" height="49.1" rx=".75"/><rect x="167.5" y="5.4" width="1.5" height="45.2" rx=".75"/><rect x="170.0" y="17.8" width="1.5" height="20.4" rx=".75"/><rect x="172.5" y="16.8" width="1.5" height="22.3" rx=".75"/><rect x="175.0" y="21.1" width="1.5" height="13.7" rx=".75"/><rect x="177.5" y="24.1" width="1.5" height="7.8" rx=".75"/><rect x="180.0" y="8.3" width="1.5" height="39.4" rx=".75"/><rect x="182.5" y="18.8" width="1.5" height="18.4" rx=".75"/><rect x="185.0" y="15.7" width="1.5" height="24.6" rx=".75"/><rect x="187.5" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="190.0" y="24.1" width="1.5" height="7.7" rx=".75"/><rect x="192.5" y="2.0" width="1.5" height="52.0" rx=".75"/><rect x="195.0" y="17.5" width="1.5" height="21.1" rx=".75"/><rect x="197.5" y="16.8" width="1.5" height="22.4" rx=".75"/><rect x="200.0" y="20.8" width="1.5" height="14.4" rx=".75"/><rect x="202.5" y="23.2" width="1.5" height="9.6" rx=".75"/><rect x="205.0" y="7.9" width="1.5" height="40.2" rx=".75"/><rect x="207.5" y="15.9" width="1.5" height="24.2" rx=".75"/><rect x="210.0" y="17.0" width="1.5" height="21.9" rx=".75"/><rect x="212.5" y="17.1" width="1.5" height="21.8" rx=".75"/><rect x="215.0" y="22.5" width="1.5" height="10.9" rx=".75"/><rect x="217.5" y="2.4" width="1.5" height="51.3" rx=".75"/><rect x="220.0" y="13.7" width="1.5" height="28.7" rx=".75"/><rect x="222.5" y="20.6" width="1.5" height="14.7" rx=".75"/><rect x="225.0" y="16.5" width="1.5" height="22.9" rx=".75"/><rect x="227.5" y="22.6" width="1.5" height="10.8" rx=".75"/><rect x="230.0" y="8.1" width="1.5" height="39.7" rx=".75"/><rect x="232.5" y="13.7" width="1.5" height="28.6" rx=".75"/><rect x="235.0" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="237.5" y="17.3" width="1.5" height="21.3" rx=".75"/><rect x="240.0" y="21.9" width="1.5" height="12.2" rx=".75"/><rect x="242.5" y="3.4" width="1.5" height="49.3" rx=".75"/><rect x="245.0" y="12.5" width="1.5" height="31.0" rx=".75"/><rect x="247.5" y="18.4" width="1.5" height="19.2" rx=".75"/><rect x="250.0" y="17.5" width="1.5" height="21.0" rx=".75"/><rect x="252.5" y="22.9" width="1.5" height="10.2" rx=".75"/><rect x="255.0" y="10.5" width="1.5" height="35.1" rx=".75"/><rect x="257.5" y="10.8" width="1.5" height="34.3" rx=".75"/><rect x="260.0" y="18.3" width="1.5" height="19.5" rx=".75"/><rect x="262.5" y="16.4" width="1.5" height="23.2" rx=".75"/><rect x="265.0" y="22.3" width="1.5" height="11.3" rx=".75"/><rect x="267.5" y="25.0" width="1.5" height="5.9" rx=".75"/><rect x="270.0" y="8.2" width="1.5" height="39.5" rx=".75"/><rect x="272.5" y="20.6" width="1.5" height="14.9" rx=".75"/><rect x="275.0" y="20.6" width="1.5" height="14.9" rx=".75"/><rect x="277.5" y="22.7" width="1.5" height="10.7" rx=".75"/><rect x="280.0" y="25.7" width="1.5" height="4.6" rx=".75"/><rect x="282.5" y="20.0" width="1.5" height="15.9" rx=".75"/><rect x="285.0" y="23.0" width="1.5" height="10.1" rx=".75"/><rect x="287.5" y="24.7" width="1.5" height="6.6" rx=".75"/><rect x="290.0" y="25.1" width="1.5" height="5.7" rx=".75"/><rect x="292.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="295.0" y="25.2" width="1.5" height="5.7" rx=".75"/><rect x="297.5" y="26.8" width="1.5" height="2.4" rx=".75"/></svg><p>Octave bass, arpeggiated saws and a gated snare for the ride through the code.</p></div>
+      <div class="score" style="--c:var(--quest)"><div class="top"><b>Chiptune</b><small>132 BPM</small></div><svg viewBox="0 0 300 56" preserveAspectRatio="none" fill="var(--c)" aria-hidden="true"><rect x="0.0" y="16.7" width="1.5" height="22.6" rx=".75"/><rect x="2.5" y="21.5" width="1.5" height="13.0" rx=".75"/><rect x="5.0" y="20.4" width="1.5" height="15.2" rx=".75"/><rect x="7.5" y="16.4" width="1.5" height="23.2" rx=".75"/><rect x="10.0" y="17.3" width="1.5" height="21.3" rx=".75"/><rect x="12.5" y="20.6" width="1.5" height="14.9" rx=".75"/><rect x="15.0" y="20.7" width="1.5" height="14.5" rx=".75"/><rect x="17.5" y="16.5" width="1.5" height="22.9" rx=".75"/><rect x="20.0" y="18.7" width="1.5" height="18.6" rx=".75"/><rect x="22.5" y="20.4" width="1.5" height="15.2" rx=".75"/><rect x="25.0" y="20.7" width="1.5" height="14.5" rx=".75"/><rect x="27.5" y="16.5" width="1.5" height="23.1" rx=".75"/><rect x="30.0" y="19.2" width="1.5" height="17.6" rx=".75"/><rect x="32.5" y="20.4" width="1.5" height="15.2" rx=".75"/><rect x="35.0" y="20.9" width="1.5" height="14.3" rx=".75"/><rect x="37.5" y="16.3" width="1.5" height="23.5" rx=".75"/><rect x="40.0" y="19.7" width="1.5" height="16.5" rx=".75"/><rect x="42.5" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="45.0" y="20.8" width="1.5" height="14.3" rx=".75"/><rect x="47.5" y="16.4" width="1.5" height="23.3" rx=".75"/><rect x="50.0" y="20.2" width="1.5" height="15.6" rx=".75"/><rect x="52.5" y="20.6" width="1.5" height="14.9" rx=".75"/><rect x="55.0" y="20.9" width="1.5" height="14.2" rx=".75"/><rect x="57.5" y="16.6" width="1.5" height="22.8" rx=".75"/><rect x="60.0" y="20.4" width="1.5" height="15.1" rx=".75"/><rect x="62.5" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="65.0" y="20.9" width="1.5" height="14.2" rx=".75"/><rect x="67.5" y="16.4" width="1.5" height="23.2" rx=".75"/><rect x="70.0" y="20.6" width="1.5" height="14.9" rx=".75"/><rect x="72.5" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="75.0" y="21.1" width="1.5" height="13.7" rx=".75"/><rect x="77.5" y="16.3" width="1.5" height="23.4" rx=".75"/><rect x="80.0" y="20.8" width="1.5" height="14.4" rx=".75"/><rect x="82.5" y="20.3" width="1.5" height="15.4" rx=".75"/><rect x="85.0" y="21.3" width="1.5" height="13.3" rx=".75"/><rect x="87.5" y="16.2" width="1.5" height="23.6" rx=".75"/><rect x="90.0" y="21.3" width="1.5" height="13.5" rx=".75"/><rect x="92.5" y="20.3" width="1.5" height="15.5" rx=".75"/><rect x="95.0" y="16.2" width="1.5" height="23.6" rx=".75"/><rect x="97.5" y="16.3" width="1.5" height="23.3" rx=".75"/><rect x="100.0" y="20.3" width="1.5" height="15.4" rx=".75"/><rect x="102.5" y="20.5" width="1.5" height="15.0" rx=".75"/><rect x="105.0" y="16.2" width="1.5" height="23.7" rx=".75"/><rect x="107.5" y="17.8" width="1.5" height="20.4" rx=".75"/><rect x="110.0" y="20.3" width="1.5" height="15.4" rx=".75"/><rect x="112.5" y="20.7" width="1.5" height="14.6" rx=".75"/><rect x="115.0" y="14.6" width="1.5" height="26.8" rx=".75"/><rect x="117.5" y="17.4" width="1.5" height="21.3" rx=".75"/><rect x="120.0" y="15.1" width="1.5" height="25.9" rx=".75"/><rect x="122.5" y="19.3" width="1.5" height="17.3" rx=".75"/><rect x="125.0" y="2.0" width="1.5" height="52.0" rx=".75"/><rect x="127.5" y="14.2" width="1.5" height="27.7" rx=".75"/><rect x="130.0" y="15.5" width="1.5" height="25.0" rx=".75"/><rect x="132.5" y="19.2" width="1.5" height="17.6" rx=".75"/><rect x="135.0" y="15.8" width="1.5" height="24.3" rx=".75"/><rect x="137.5" y="18.1" width="1.5" height="19.7" rx=".75"/><rect x="140.0" y="16.0" width="1.5" height="24.1" rx=".75"/><rect x="142.5" y="19.5" width="1.5" height="17.1" rx=".75"/><rect x="145.0" y="3.2" width="1.5" height="49.7" rx=".75"/><rect x="147.5" y="16.3" width="1.5" height="23.3" rx=".75"/><rect x="150.0" y="15.9" width="1.5" height="24.3" rx=".75"/><rect x="152.5" y="19.3" width="1.5" height="17.4" rx=".75"/><rect x="155.0" y="15.7" width="1.5" height="24.7" rx=".75"/><rect x="157.5" y="19.4" width="1.5" height="17.1" rx=".75"/><rect x="160.0" y="16.7" width="1.5" height="22.6" rx=".75"/><rect x="162.5" y="19.8" width="1.5" height="16.4" rx=".75"/><rect x="165.0" y="2.4" width="1.5" height="51.3" rx=".75"/><rect x="167.5" y="18.1" width="1.5" height="19.8" rx=".75"/><rect x="170.0" y="16.9" width="1.5" height="22.1" rx=".75"/><rect x="172.5" y="19.9" width="1.5" height="16.1" rx=".75"/><rect x="175.0" y="15.1" width="1.5" height="25.8" rx=".75"/><rect x="177.5" y="19.5" width="1.5" height="17.0" rx=".75"/><rect x="180.0" y="17.8" width="1.5" height="20.4" rx=".75"/><rect x="182.5" y="20.0" width="1.5" height="16.1" rx=".75"/><rect x="185.0" y="2.8" width="1.5" height="50.4" rx=".75"/><rect x="187.5" y="16.4" width="1.5" height="23.1" rx=".75"/><rect x="190.0" y="17.5" width="1.5" height="21.0" rx=".75"/><rect x="192.5" y="14.0" width="1.5" height="28.0" rx=".75"/><rect x="195.0" y="16.4" width="1.5" height="23.3" rx=".75"/><rect x="197.5" y="16.3" width="1.5" height="23.3" rx=".75"/><rect x="200.0" y="18.7" width="1.5" height="18.5" rx=".75"/><rect x="202.5" y="6.3" width="1.5" height="43.5" rx=".75"/><rect x="205.0" y="9.6" width="1.5" height="36.7" rx=".75"/><rect x="207.5" y="17.1" width="1.5" height="21.8" rx=".75"/><rect x="210.0" y="19.7" width="1.5" height="16.6" rx=".75"/><rect x="212.5" y="14.2" width="1.5" height="27.5" rx=".75"/><rect x="215.0" y="18.3" width="1.5" height="19.3" rx=".75"/><rect x="217.5" y="17.2" width="1.5" height="21.5" rx=".75"/><rect x="220.0" y="19.8" width="1.5" height="16.4" rx=".75"/><rect x="222.5" y="7.1" width="1.5" height="41.8" rx=".75"/><rect x="225.0" y="13.3" width="1.5" height="29.4" rx=".75"/><rect x="227.5" y="15.6" width="1.5" height="24.7" rx=".75"/><rect x="230.0" y="19.8" width="1.5" height="16.4" rx=".75"/><rect x="232.5" y="15.8" width="1.5" height="24.5" rx=".75"/><rect x="235.0" y="18.8" width="1.5" height="18.4" rx=".75"/><rect x="237.5" y="15.9" width="1.5" height="24.2" rx=".75"/><rect x="240.0" y="19.9" width="1.5" height="16.2" rx=".75"/><rect x="242.5" y="4.4" width="1.5" height="47.2" rx=".75"/><rect x="245.0" y="17.8" width="1.5" height="20.3" rx=".75"/><rect x="247.5" y="15.7" width="1.5" height="24.5" rx=".75"/><rect x="250.0" y="19.9" width="1.5" height="16.2" rx=".75"/><rect x="252.5" y="14.4" width="1.5" height="27.2" rx=".75"/><rect x="255.0" y="19.1" width="1.5" height="17.8" rx=".75"/><rect x="257.5" y="15.1" width="1.5" height="25.8" rx=".75"/><rect x="260.0" y="19.8" width="1.5" height="16.4" rx=".75"/><rect x="262.5" y="4.7" width="1.5" height="46.5" rx=".75"/><rect x="265.0" y="19.2" width="1.5" height="17.5" rx=".75"/><rect x="267.5" y="18.2" width="1.5" height="19.7" rx=".75"/><rect x="270.0" y="21.7" width="1.5" height="12.5" rx=".75"/><rect x="272.5" y="18.7" width="1.5" height="18.7" rx=".75"/><rect x="275.0" y="22.3" width="1.5" height="11.4" rx=".75"/><rect x="277.5" y="20.9" width="1.5" height="14.2" rx=".75"/><rect x="280.0" y="21.2" width="1.5" height="13.6" rx=".75"/><rect x="282.5" y="18.6" width="1.5" height="18.8" rx=".75"/><rect x="285.0" y="24.3" width="1.5" height="7.4" rx=".75"/><rect x="287.5" y="24.2" width="1.5" height="7.6" rx=".75"/><rect x="290.0" y="25.6" width="1.5" height="4.8" rx=".75"/><rect x="292.5" y="25.7" width="1.5" height="4.6" rx=".75"/><rect x="295.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="297.5" y="26.8" width="1.5" height="2.4" rx=".75"/></svg><p>Square-wave lead, triangle bass and noise drums, with coins and level-ups on cue.</p></div>
+      <div class="score" style="--c:var(--news)"><div class="top"><b>News</b><small>116 BPM</small></div><svg viewBox="0 0 300 56" preserveAspectRatio="none" fill="var(--c)" aria-hidden="true"><rect x="0.0" y="20.1" width="1.5" height="15.8" rx=".75"/><rect x="2.5" y="24.3" width="1.5" height="7.4" rx=".75"/><rect x="5.0" y="20.7" width="1.5" height="14.7" rx=".75"/><rect x="7.5" y="23.8" width="1.5" height="8.4" rx=".75"/><rect x="10.0" y="19.2" width="1.5" height="17.5" rx=".75"/><rect x="12.5" y="23.5" width="1.5" height="9.0" rx=".75"/><rect x="15.0" y="20.4" width="1.5" height="15.3" rx=".75"/><rect x="17.5" y="23.2" width="1.5" height="9.6" rx=".75"/><rect x="20.0" y="19.6" width="1.5" height="16.9" rx=".75"/><rect x="22.5" y="21.2" width="1.5" height="13.6" rx=".75"/><rect x="25.0" y="23.9" width="1.5" height="8.1" rx=".75"/><rect x="27.5" y="20.0" width="1.5" height="16.0" rx=".75"/><rect x="30.0" y="23.1" width="1.5" height="9.8" rx=".75"/><rect x="32.5" y="19.5" width="1.5" height="16.9" rx=".75"/><rect x="35.0" y="23.6" width="1.5" height="8.7" rx=".75"/><rect x="37.5" y="20.3" width="1.5" height="15.3" rx=".75"/><rect x="40.0" y="23.9" width="1.5" height="8.2" rx=".75"/><rect x="42.5" y="19.4" width="1.5" height="17.1" rx=".75"/><rect x="45.0" y="23.4" width="1.5" height="9.2" rx=".75"/><rect x="47.5" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="50.0" y="21.6" width="1.5" height="12.9" rx=".75"/><rect x="52.5" y="23.9" width="1.5" height="8.3" rx=".75"/><rect x="55.0" y="18.4" width="1.5" height="19.1" rx=".75"/><rect x="57.5" y="23.8" width="1.5" height="8.4" rx=".75"/><rect x="60.0" y="20.5" width="1.5" height="15.0" rx=".75"/><rect x="62.5" y="23.1" width="1.5" height="9.9" rx=".75"/><rect x="65.0" y="19.4" width="1.5" height="17.2" rx=".75"/><rect x="67.5" y="21.9" width="1.5" height="12.3" rx=".75"/><rect x="70.0" y="20.3" width="1.5" height="15.5" rx=".75"/><rect x="72.5" y="22.5" width="1.5" height="11.0" rx=".75"/><rect x="75.0" y="24.1" width="1.5" height="7.8" rx=".75"/><rect x="77.5" y="19.8" width="1.5" height="16.4" rx=".75"/><rect x="80.0" y="23.8" width="1.5" height="8.5" rx=".75"/><rect x="82.5" y="20.3" width="1.5" height="15.4" rx=".75"/><rect x="85.0" y="24.2" width="1.5" height="7.6" rx=".75"/><rect x="87.5" y="3.1" width="1.5" height="49.7" rx=".75"/><rect x="90.0" y="11.7" width="1.5" height="32.6" rx=".75"/><rect x="92.5" y="15.7" width="1.5" height="24.6" rx=".75"/><rect x="95.0" y="16.9" width="1.5" height="22.2" rx=".75"/><rect x="97.5" y="17.8" width="1.5" height="20.4" rx=".75"/><rect x="100.0" y="19.4" width="1.5" height="17.1" rx=".75"/><rect x="102.5" y="23.5" width="1.5" height="9.0" rx=".75"/><rect x="105.0" y="21.3" width="1.5" height="13.4" rx=".75"/><rect x="107.5" y="24.0" width="1.5" height="8.1" rx=".75"/><rect x="110.0" y="10.5" width="1.5" height="35.1" rx=".75"/><rect x="112.5" y="17.2" width="1.5" height="21.5" rx=".75"/><rect x="115.0" y="17.6" width="1.5" height="20.9" rx=".75"/><rect x="117.5" y="21.3" width="1.5" height="13.4" rx=".75"/><rect x="120.0" y="13.9" width="1.5" height="28.3" rx=".75"/><rect x="122.5" y="19.0" width="1.5" height="18.1" rx=".75"/><rect x="125.0" y="20.9" width="1.5" height="14.3" rx=".75"/><rect x="127.5" y="21.2" width="1.5" height="13.7" rx=".75"/><rect x="130.0" y="24.8" width="1.5" height="6.3" rx=".75"/><rect x="132.5" y="2.9" width="1.5" height="50.2" rx=".75"/><rect x="135.0" y="10.5" width="1.5" height="34.9" rx=".75"/><rect x="137.5" y="15.3" width="1.5" height="25.4" rx=".75"/><rect x="140.0" y="20.0" width="1.5" height="15.9" rx=".75"/><rect x="142.5" y="18.1" width="1.5" height="19.8" rx=".75"/><rect x="145.0" y="22.3" width="1.5" height="11.5" rx=".75"/><rect x="147.5" y="20.8" width="1.5" height="14.4" rx=".75"/><rect x="150.0" y="21.4" width="1.5" height="13.2" rx=".75"/><rect x="152.5" y="24.6" width="1.5" height="6.8" rx=".75"/><rect x="155.0" y="10.8" width="1.5" height="34.3" rx=".75"/><rect x="157.5" y="17.7" width="1.5" height="20.7" rx=".75"/><rect x="160.0" y="17.1" width="1.5" height="21.7" rx=".75"/><rect x="162.5" y="23.2" width="1.5" height="9.6" rx=".75"/><rect x="165.0" y="13.2" width="1.5" height="29.5" rx=".75"/><rect x="167.5" y="21.9" width="1.5" height="12.3" rx=".75"/><rect x="170.0" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="172.5" y="23.0" width="1.5" height="10.0" rx=".75"/><rect x="175.0" y="3.3" width="1.5" height="49.5" rx=".75"/><rect x="177.5" y="4.9" width="1.5" height="46.3" rx=".75"/><rect x="180.0" y="11.8" width="1.5" height="32.4" rx=".75"/><rect x="182.5" y="15.1" width="1.5" height="25.9" rx=".75"/><rect x="185.0" y="19.5" width="1.5" height="17.1" rx=".75"/><rect x="187.5" y="17.2" width="1.5" height="21.6" rx=".75"/><rect x="190.0" y="23.1" width="1.5" height="9.9" rx=".75"/><rect x="192.5" y="20.7" width="1.5" height="14.5" rx=".75"/><rect x="195.0" y="23.3" width="1.5" height="9.4" rx=".75"/><rect x="197.5" y="9.8" width="1.5" height="36.4" rx=".75"/><rect x="200.0" y="14.8" width="1.5" height="26.3" rx=".75"/><rect x="202.5" y="19.9" width="1.5" height="16.2" rx=".75"/><rect x="205.0" y="18.0" width="1.5" height="20.0" rx=".75"/><rect x="207.5" y="23.3" width="1.5" height="9.3" rx=".75"/><rect x="210.0" y="13.4" width="1.5" height="29.2" rx=".75"/><rect x="212.5" y="23.7" width="1.5" height="8.7" rx=".75"/><rect x="215.0" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="217.5" y="24.2" width="1.5" height="7.5" rx=".75"/><rect x="220.0" y="2.0" width="1.5" height="52.0" rx=".75"/><rect x="222.5" y="8.5" width="1.5" height="38.9" rx=".75"/><rect x="225.0" y="14.7" width="1.5" height="26.5" rx=".75"/><rect x="227.5" y="15.3" width="1.5" height="25.5" rx=".75"/><rect x="230.0" y="22.1" width="1.5" height="11.9" rx=".75"/><rect x="232.5" y="17.3" width="1.5" height="21.3" rx=".75"/><rect x="235.0" y="23.5" width="1.5" height="9.1" rx=".75"/><rect x="237.5" y="21.0" width="1.5" height="14.0" rx=".75"/><rect x="240.0" y="23.1" width="1.5" height="9.9" rx=".75"/><rect x="242.5" y="10.6" width="1.5" height="34.9" rx=".75"/><rect x="245.0" y="15.8" width="1.5" height="24.4" rx=".75"/><rect x="247.5" y="17.2" width="1.5" height="21.5" rx=".75"/><rect x="250.0" y="20.9" width="1.5" height="14.2" rx=".75"/><rect x="252.5" y="12.9" width="1.5" height="30.1" rx=".75"/><rect x="255.0" y="16.3" width="1.5" height="23.4" rx=".75"/><rect x="257.5" y="24.2" width="1.5" height="7.7" rx=".75"/><rect x="260.0" y="20.5" width="1.5" height="15.0" rx=".75"/><rect x="262.5" y="24.5" width="1.5" height="7.0" rx=".75"/><rect x="265.0" y="5.6" width="1.5" height="44.9" rx=".75"/><rect x="267.5" y="14.7" width="1.5" height="26.6" rx=".75"/><rect x="270.0" y="19.2" width="1.5" height="17.7" rx=".75"/><rect x="272.5" y="20.6" width="1.5" height="14.8" rx=".75"/><rect x="275.0" y="22.1" width="1.5" height="11.8" rx=".75"/><rect x="277.5" y="23.4" width="1.5" height="9.2" rx=".75"/><rect x="280.0" y="26.1" width="1.5" height="3.8" rx=".75"/><rect x="282.5" y="25.0" width="1.5" height="5.9" rx=".75"/><rect x="285.0" y="26.4" width="1.5" height="3.2" rx=".75"/><rect x="287.5" y="22.7" width="1.5" height="10.6" rx=".75"/><rect x="290.0" y="25.2" width="1.5" height="5.6" rx=".75"/><rect x="292.5" y="26.3" width="1.5" height="3.4" rx=".75"/><rect x="295.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="297.5" y="26.8" width="1.5" height="2.4" rx=".75"/></svg><p>Ticking hats, timpani and brass stabs under a sting on the breaking banner.</p></div>
+      <div class="score" style="--c:var(--reel)"><div class="top"><b>Trap</b><small>145 BPM</small></div><svg viewBox="0 0 300 56" preserveAspectRatio="none" fill="var(--c)" aria-hidden="true"><rect x="0.0" y="26.2" width="1.5" height="3.7" rx=".75"/><rect x="2.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="5.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="7.5" y="25.4" width="1.5" height="5.2" rx=".75"/><rect x="10.0" y="26.1" width="1.5" height="3.8" rx=".75"/><rect x="12.5" y="26.7" width="1.5" height="2.6" rx=".75"/><rect x="15.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="17.5" y="25.3" width="1.5" height="5.4" rx=".75"/><rect x="20.0" y="25.9" width="1.5" height="4.1" rx=".75"/><rect x="22.5" y="26.3" width="1.5" height="3.4" rx=".75"/><rect x="25.0" y="25.8" width="1.5" height="4.4" rx=".75"/><rect x="27.5" y="26.1" width="1.5" height="3.7" rx=".75"/><rect x="30.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="32.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="35.0" y="26.1" width="1.5" height="3.8" rx=".75"/><rect x="37.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="40.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="42.5" y="25.5" width="1.5" height="5.1" rx=".75"/><rect x="45.0" y="25.6" width="1.5" height="4.9" rx=".75"/><rect x="47.5" y="26.5" width="1.5" height="3.1" rx=".75"/><rect x="50.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="52.5" y="25.5" width="1.5" height="5.0" rx=".75"/><rect x="55.0" y="26.4" width="1.5" height="3.2" rx=".75"/><rect x="57.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="60.0" y="25.4" width="1.5" height="5.2" rx=".75"/><rect x="62.5" y="25.4" width="1.5" height="5.1" rx=".75"/><rect x="65.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="67.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="70.0" y="26.1" width="1.5" height="3.7" rx=".75"/><rect x="72.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="75.0" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="77.5" y="25.6" width="1.5" height="4.8" rx=".75"/><rect x="80.0" y="25.7" width="1.5" height="4.7" rx=".75"/><rect x="82.5" y="26.4" width="1.5" height="3.3" rx=".75"/><rect x="85.0" y="26.4" width="1.5" height="3.2" rx=".75"/><rect x="87.5" y="25.8" width="1.5" height="4.3" rx=".75"/><rect x="90.0" y="25.9" width="1.5" height="4.3" rx=".75"/><rect x="92.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="95.0" y="26.4" width="1.5" height="3.1" rx=".75"/><rect x="97.5" y="25.7" width="1.5" height="4.5" rx=".75"/><rect x="100.0" y="26.6" width="1.5" height="2.8" rx=".75"/><rect x="102.5" y="26.8" width="1.5" height="2.4" rx=".75"/><rect x="105.0" y="3.5" width="1.5" height="48.9" rx=".75"/><rect x="107.5" y="6.1" width="1.5" height="43.7" rx=".75"/><rect x="110.0" y="6.8" width="1.5" height="42.4" rx=".75"/><rect x="112.5" y="14.5" width="1.5" height="27.1" rx=".75"/><rect x="115.0" y="12.4" width="1.5" height="31.3" rx=".75"/><rect x="117.5" y="14.1" width="1.5" height="27.8" rx=".75"/><rect x="120.0" y="14.9" width="1.5" height="26.2" rx=".75"/><rect x="122.5" y="9.0" width="1.5" height="38.1" rx=".75"/><rect x="125.0" y="10.8" width="1.5" height="34.5" rx=".75"/><rect x="127.5" y="8.7" width="1.5" height="38.5" rx=".75"/><rect x="130.0" y="17.6" width="1.5" height="20.8" rx=".75"/><rect x="132.5" y="19.6" width="1.5" height="16.8" rx=".75"/><rect x="135.0" y="22.6" width="1.5" height="10.8" rx=".75"/><rect x="137.5" y="23.5" width="1.5" height="9.1" rx=".75"/><rect x="140.0" y="3.0" width="1.5" height="50.0" rx=".75"/><rect x="142.5" y="2.2" width="1.5" height="51.5" rx=".75"/><rect x="145.0" y="8.1" width="1.5" height="39.8" rx=".75"/><rect x="147.5" y="11.3" width="1.5" height="33.5" rx=".75"/><rect x="150.0" y="14.6" width="1.5" height="26.9" rx=".75"/><rect x="152.5" y="16.7" width="1.5" height="22.7" rx=".75"/><rect x="155.0" y="15.6" width="1.5" height="24.8" rx=".75"/><rect x="157.5" y="9.4" width="1.5" height="37.1" rx=".75"/><rect x="160.0" y="7.2" width="1.5" height="41.6" rx=".75"/><rect x="162.5" y="9.3" width="1.5" height="37.4" rx=".75"/><rect x="165.0" y="18.1" width="1.5" height="19.7" rx=".75"/><rect x="167.5" y="20.7" width="1.5" height="14.7" rx=".75"/><rect x="170.0" y="24.2" width="1.5" height="7.5" rx=".75"/><rect x="172.5" y="23.7" width="1.5" height="8.6" rx=".75"/><rect x="175.0" y="4.4" width="1.5" height="47.2" rx=".75"/><rect x="177.5" y="2.0" width="1.5" height="52.0" rx=".75"/><rect x="180.0" y="5.2" width="1.5" height="45.6" rx=".75"/><rect x="182.5" y="7.0" width="1.5" height="41.9" rx=".75"/><rect x="185.0" y="10.2" width="1.5" height="35.6" rx=".75"/><rect x="187.5" y="13.7" width="1.5" height="28.5" rx=".75"/><rect x="190.0" y="13.5" width="1.5" height="29.1" rx=".75"/><rect x="192.5" y="16.0" width="1.5" height="24.0" rx=".75"/><rect x="195.0" y="3.4" width="1.5" height="49.2" rx=".75"/><rect x="197.5" y="5.6" width="1.5" height="44.8" rx=".75"/><rect x="200.0" y="8.5" width="1.5" height="39.0" rx=".75"/><rect x="202.5" y="20.0" width="1.5" height="16.0" rx=".75"/><rect x="205.0" y="22.3" width="1.5" height="11.3" rx=".75"/><rect x="207.5" y="23.0" width="1.5" height="10.0" rx=".75"/><rect x="210.0" y="25.5" width="1.5" height="5.0" rx=".75"/><rect x="212.5" y="3.0" width="1.5" height="50.0" rx=".75"/><rect x="215.0" y="5.4" width="1.5" height="45.2" rx=".75"/><rect x="217.5" y="15.3" width="1.5" height="25.4" rx=".75"/><rect x="220.0" y="14.1" width="1.5" height="27.8" rx=".75"/><rect x="222.5" y="16.2" width="1.5" height="23.6" rx=".75"/><rect x="225.0" y="15.5" width="1.5" height="25.0" rx=".75"/><rect x="227.5" y="17.9" width="1.5" height="20.2" rx=".75"/><rect x="230.0" y="9.5" width="1.5" height="37.1" rx=".75"/><rect x="232.5" y="16.9" width="1.5" height="22.2" rx=".75"/><rect x="235.0" y="11.3" width="1.5" height="33.3" rx=".75"/><rect x="237.5" y="19.0" width="1.5" height="18.1" rx=".75"/><rect x="240.0" y="23.6" width="1.5" height="8.7" rx=".75"/><rect x="242.5" y="23.4" width="1.5" height="9.2" rx=".75"/><rect x="245.0" y="26.1" width="1.5" height="3.9" rx=".75"/><rect x="247.5" y="3.2" width="1.5" height="49.6" rx=".75"/><rect x="250.0" y="7.9" width="1.5" height="40.2" rx=".75"/><rect x="252.5" y="7.2" width="1.5" height="41.6" rx=".75"/><rect x="255.0" y="13.2" width="1.5" height="29.6" rx=".75"/><rect x="257.5" y="14.9" width="1.5" height="26.1" rx=".75"/><rect x="260.0" y="14.4" width="1.5" height="27.1" rx=".75"/><rect x="262.5" y="16.5" width="1.5" height="22.9" rx=".75"/><rect x="265.0" y="9.7" width="1.5" height="36.6" rx=".75"/><rect x="267.5" y="16.5" width="1.5" height="23.0" rx=".75"/><rect x="270.0" y="12.8" width="1.5" height="30.5" rx=".75"/><rect x="272.5" y="22.9" width="1.5" height="10.3" rx=".75"/><rect x="275.0" y="22.8" width="1.5" height="10.3" rx=".75"/><rect x="277.5" y="24.9" width="1.5" height="6.2" rx=".75"/><rect x="280.0" y="26.6" width="1.5" height="2.9" rx=".75"/><rect x="282.5" y="17.6" width="1.5" height="20.8" rx=".75"/><rect x="285.0" y="21.6" width="1.5" height="12.8" rx=".75"/><rect x="287.5" y="21.6" width="1.5" height="12.8" rx=".75"/><rect x="290.0" y="24.8" width="1.5" height="6.4" rx=".75"/><rect x="292.5" y="25.5" width="1.5" height="5.0" rx=".75"/><rect x="295.0" y="26.6" width="1.5" height="2.7" rx=".75"/><rect x="297.5" y="26.8" width="1.5" height="2.4" rx=".75"/></svg><p>808 glides, hi-hat rolls and plucks in half time for the vertical short.</p></div>
+    </div>
+    <div class="mix">
+      <div><b>On the beat</b><span>Scene durations are quantized to beats; the drop lands on a bar line.</span></div>
+      <div><b>On cue</b><span>Whooshes, typing, coins and impacts are triggered by what is on screen.</span></div>
+      <div><b>-16 dB</b><span>Voice normalized while speaking; the music is ducked about 14 dB beneath it.</span></div>
+      <div><b>-14 LUFS</b><span>Integrated loudness of the final mix, the common streaming target.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="engine">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Engine</span>
+      <h2>Every frame is a function of time.</h2>
+      <p class="lead">The scene engine is a single dependency-free script. Nothing on screen depends on the previous frame, a clock or randomness without a seed, so any host can seek it to any moment and get the same picture.</p>
+    </div>
+    <div class="grid3">
+      <div class="feat"><h3>Composable motion</h3><p>An animation registry where an element can rise, bob and punch at once. Transforms are composed per frame rather than overwritten.</p><span class="tag">29 animation kinds</span></div>
+      <div class="feat"><h3>Camera and transitions</h3><p>Slow push-ins, beat punches after the drop, and a transition language per format: flash cuts, train slides, iris wipes, news swooshes, punch zooms.</p><span class="tag">5 transition styles</span></div>
+      <div class="feat"><h3>Seeded particles</h3><p>Sparks, confetti, pixels and icon bursts are replayed from their seed on every frame, which makes them seekable and identical across renderers.</p><span class="tag">deterministic</span></div>
+      <div class="feat"><h3>A mascot that talks</h3><p>Bit appears in five costumes, blinks, waves and cheers, and moves its mouth only while a word is being spoken, using the voice's word timings.</p><span class="tag">lip-synced</span></div>
+      <div class="feat"><h3>Captions per show</h3><p>Letterbox subtitles, an amber LED station board, an RPG dialog box that types as it speaks, closed captions and large word-by-word captions.</p><span class="tag">5 caption styles</span></div>
+      <div class="feat"><h3>Portable by design</h3><p>Bundled fonts and an original SVG icon set mean renders do not depend on the fonts or emoji installed on a machine.</p><span class="tag">no system fonts required</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="integrations">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Integrations</span>
+      <h2>Fits into your video stack.</h2>
+      <p class="lead">The built-in renderer is one of four ways out. The same story renders identically in HyperFrames and Remotion, or becomes a brief that any agent video skill can film in its own style.</p>
+    </div>
+    <div class="grid4">
+      <div class="feat"><h3>MP4 and GIF</h3><p>Headless Chrome and FFmpeg. H.264 with AAC at 30 fps, plus an eight-second GIF sized for a README.</p><span class="tag">-e mp4</span></div>
+      <div class="feat"><h3>HyperFrames</h3><p>A project driven by the hf-seek protocol. Passes <span class="mono">hyperframes check</span> and opens in the Studio for editing.</p><span class="tag">-e hyperframes</span></div>
+      <div class="feat"><h3>Remotion</h3><p>A React project where <span class="mono">useCurrentFrame</span> drives the engine. Swap in your own components while keeping the story.</p><span class="tag">-e remotion</span></div>
+      <div class="feat"><h3>Agent skills</h3><p>BRIEF.md carries the scenes, verbatim code, evidence and style suggestions for lemo-opuscar, OpenMontage or any video skill.</p><span class="tag">-e brief</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="docs">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Quick start</span>
+      <h2>Two commands to your first film.</h2>
+      <p class="lead">Requires Python 3.11 or 3.12, FFmpeg and Chrome or Chromium. The voice model, about 120 MB, downloads from GitHub Releases on the first voiced render.</p>
+    </div>
+    <div class="docs">
+      <div>
+        <h3>Install and render</h3>
+<pre><span class="c"># install</span>
+<span class="p">$</span> pip install git+https://github.com/burhan-mujahid/repo2video
+<span class="p">$</span> python -m playwright install chromium
+
+<span class="c"># all five formats for a GitHub repository</span>
+<span class="p">$</span> repo2video rtk-ai/rtk -m all
+
+<span class="c"># one format for the current folder, every export</span>
+<span class="p">$</span> repo2video . -m engineering -e all
+
+<span class="c"># edit the script, then render it again</span>
+<span class="p">$</span> repo2video . -m marketing --plan-only -o film
+<span class="p">$</span> repo2video --story film/story.json</pre>
+        <h3 style="margin-top:28px">Claude Code plugin</h3>
+<pre><span class="p">$</span> claude plugin marketplace add burhan-mujahid/repo2video
+<span class="p">$</span> claude plugin install repo2video@repo2video</pre>
+      </div>
+      <div>
+        <h3>Command-line reference</h3>
+        <table class="opts">
+          <tbody>
+            <tr><td>target</td><td>Folder, GitHub URL or owner/repo. Defaults to the current folder.</td></tr>
+            <tr><td>-m, --mode</td><td>marketing, engineering, onboarding, release, social or all.</td></tr>
+            <tr><td>-e, --export</td><td>Comma-separated: mp4, hyperframes, remotion, brief, or all.</td></tr>
+            <tr><td>-o, --out</td><td>Output folder. Defaults to repo2video-out/&lt;name&gt;-&lt;mode&gt;.</td></tr>
+            <tr><td>--story</td><td>Render an edited story.json instead of analyzing the repository.</td></tr>
+            <tr><td>--plan-only</td><td>Write facts.json and story.json without rendering.</td></tr>
+            <tr><td>--voice</td><td>Override the mode's Kokoro voice, for example bf_emma.</td></tr>
+            <tr><td>--no-voice</td><td>Captions, music and effects without narration.</td></tr>
+          </tbody>
+        </table>
+        <h3 style="margin-top:28px">Output</h3>
+        <table class="opts">
+          <tbody>
+            <tr><td>video.mp4</td><td>The finished film.</td></tr>
+            <tr><td>preview.gif</td><td>The first eight seconds, sized for a README.</td></tr>
+            <tr><td>soundtrack.wav</td><td>Voice, score and effects, mixed.</td></tr>
+            <tr><td>story.json</td><td>The editable script and scene data.</td></tr>
+            <tr><td>facts.json</td><td>Everything the analyzer found, with sources.</td></tr>
+            <tr><td>BRIEF.md</td><td>A director's brief for other video tools.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="logo.svg" alt=""><span>repo<em>2</em>video</span></a>
+    <div class="f-links">
+      <a href="https://github.com/burhan-mujahid/repo2video">GitHub</a>
+      <a href="https://github.com/burhan-mujahid/repo2video/releases">Releases</a>
+      <a href="https://github.com/burhan-mujahid/repo2video/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/burhan-mujahid/repo2video/blob/main/SECURITY.md">Security</a>
+    </div>
+    <span>MIT License. Voice by Kokoro, pronunciation by misaki and spaCy.</span>
+  </div>
+</footer>
+
+<script>
+const F = [
+  { t: "Trailer", c: "var(--trailer)", v: "trailer", cmd: "repo2video rtk-ai/rtk -m marketing",
+    d: "A launch film cut like a movie trailer. Deep narration, letterboxed frames and a title slam timed to the drop.",
+    l: ["Cold open in tracking type, built from the project's own pitch", "Problem statement glitching over the repository's real entry-point code", "Golden title slam with sparks, timed to a riser and impact", "Feature montage hard-cut on the beat", "Odometer numbers and credits rated T for Terminal"] },
+  { t: "Code Metro", c: "var(--metro)", v: "metro", cmd: "repo2video rtk-ai/rtk -m engineering",
+    d: "An architecture walkthrough as a subway ride, from the entry point to the last function call.",
+    l: ["A ticket from main() to the final stop", "District map: the folder tree as a treemap", "Network map where every line is a real import", "One station per traced function, with the hand-off line lit", "LED station-board captions"] },
+  { t: "The Quest", c: "var(--quest)", v: "quest", cmd: "repo2video tj/commander.js -m onboarding",
+    d: "A contributor's first day as a video game, from the title screen to the first pull request.",
+    l: ["Setup commands as objectives that earn XP", "Folders as zones on a world map", "The first file to read as a boss with an HP bar", "Contributing rules on a guild scroll", "An RPG dialog box that types as it speaks"] },
+  { t: "Breaking News", c: "var(--news)", v: "news", cmd: "repo2video rtk-ai/rtk -m release",
+    d: "A release announcement as a live broadcast, built from the CHANGELOG or git history.",
+    l: ["LIVE bug and a BREAKING NEWS slam", "Headlines flipped in from the latest release", "The numbers from git: commits and contributors", "A field report from the terminal", "A ticker running through the whole broadcast"] },
+  { t: "Vertical Short", c: "var(--reel)", v: "reel", cmd: "repo2video rtk-ai/rtk -m social", vertical: true,
+    d: "A 9:16 short for Shorts, Reels, TikTok and X, under thirty seconds.",
+    l: ["A slammed hook in the first second", "Three reasons, one per beat", "The headline number with a burst", "Tap-to-copy install command", "Large word-by-word captions"] }
+];
+const tabs = document.querySelectorAll(".tab"), stage = document.getElementById("stage"), fv = document.getElementById("fv");
+function show(i) {
+  const f = F[i];
+  tabs.forEach((b, k) => b.setAttribute("aria-selected", k === i));
+  stage.style.setProperty("--c", f.c);
+  stage.classList.toggle("vertical", !!f.vertical);
+  fv.pause(); fv.src = "media/" + f.v + ".mp4"; fv.poster = "media/" + f.v + ".jpg";
+  document.getElementById("ft").textContent = f.t;
+  document.getElementById("fd").textContent = f.d;
+  document.getElementById("fc").textContent = "$ " + f.cmd;
+  document.getElementById("fl").innerHTML = f.l.map(x => "<li>" + x + "</li>").join("");
+}
+tabs.forEach((b, i) => b.addEventListener("click", () => { show(i); fv.play().catch(() => {}); }));
+show(0);
+
+const hv = document.getElementById("hero-video"), um = document.getElementById("unmute");
+um.addEventListener("click", () => { hv.muted = !hv.muted; if (!hv.muted) { hv.currentTime = 0; hv.play(); } um.lastChild.textContent = hv.muted ? " Sound on" : " Mute"; });
+
+const pron = document.getElementById("pron"), pi = document.getElementById("playicon"), prog = document.getElementById("prog");
+document.getElementById("play").addEventListener("click", () => { pron.paused ? pron.play() : pron.pause(); });
+pron.addEventListener("play", () => pi.setAttribute("d", "M6 4h4v16H6zm8 0h4v16h-4z"));
+pron.addEventListener("pause", () => pi.setAttribute("d", "M7 4l13 8-13 8z"));
+pron.addEventListener("timeupdate", () => { prog.style.width = (100 * pron.currentTime / (pron.duration || 1)) + "%"; });
+
+document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
+  navigator.clipboard.writeText(b.dataset.copy).then(() => { b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1500); });
+}));
+</script>
+</body>
+</html>
