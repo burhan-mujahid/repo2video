@@ -7,3 +7,10 @@ node_modules/
 .pytest_cache/
 build/
 dist/
+
+# Internal planning notes (kept locally, not published)
+CLAUDE.md
+ROADMAP.md
+docs/PLAN.md
+claude-code-starter-prompt.md
+.DS_Store
