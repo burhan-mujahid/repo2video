@@ -6,7 +6,7 @@ readme = "README.md"
 license = "MIT"
 authors = [{ name = "Burhan Mujahid" }]
 keywords = ["video", "documentation", "developer-tools", "text-to-speech", "motion-graphics", "github"]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
   "playwright>=1.40",
   "kokoro-onnx>=0.4",

@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/burhan-mujahid/repo2video/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/burhan-mujahid/repo2video/ci.yml?branch=main&style=flat-square&label=CI&labelColor=0A0B0F&color=2A2E39"></a>
   <a href="https://github.com/burhan-mujahid/repo2video/releases/tag/v0.1.0"><img alt="Release" src="https://img.shields.io/badge/release-v0.1.0-F5B544?style=flat-square&labelColor=0A0B0F"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-2A2E39?style=flat-square&labelColor=0A0B0F">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-2A2E39?style=flat-square&labelColor=0A0B0F">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-2A2E39?style=flat-square&labelColor=0A0B0F"></a>
   <a href="https://burhan-mujahid.github.io/repo2video/"><img alt="Website" src="https://img.shields.io/badge/website-live-2A2E39?style=flat-square&labelColor=0A0B0F"></a>
 </p>
@@ -118,7 +118,7 @@ caption style. The same facts are told five different ways.
 
 ## Quick start
 
-**Requirements:** Python 3.11 or newer, [FFmpeg](https://ffmpeg.org), and Chrome or Chromium. On first use, the
+**Requirements:** Python 3.11 or 3.12 (the pronunciation library, misaki, does not yet support 3.13), [FFmpeg](https://ffmpeg.org), and Chrome or Chromium. On first use, the
 Kokoro voice model (about 120 MB) is downloaded from GitHub Releases into `~/.cache/repo2video`.
 
 ```sh
@@ -386,7 +386,7 @@ node --check repo2video/engine.js
 
 The test suite builds a small fixture repository and checks analysis, all five formats, every pronunciation case
 listed above, beat quantization and bar alignment, sound cues, the exports and an end-to-end render. Continuous
-integration runs it on Python 3.11, 3.12 and 3.13. See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions.
+integration runs it on Python 3.11 and 3.12. See [CONTRIBUTING.md](CONTRIBUTING.md) for conventions.
 
 **Performance.** A one-minute video takes about three to four minutes on a two-core machine: roughly half for
 speech synthesis and half for frame capture and encoding. Output is 1280 by 720 at 30 fps, or 720 by 1280 for the
