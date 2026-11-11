@@ -1,8 +1,12 @@
 name: Release
 
+# A release is published when its notes land on main (docs/releases/vX.Y.Z.md), or when a vX.Y.Z tag is pushed.
 on:
   push:
+    branches: [main]
+    paths: ["docs/releases/**"]
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,11 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read the version
+        id: v
+        run: echo "tag=v$(grep -m1 '^version' pyproject.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
       - name: Publish the GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          name: repo2video ${{ github.ref_name }}
-          body_path: docs/releases/${{ github.ref_name }}.md
+          tag_name: ${{ steps.v.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: repo2video ${{ steps.v.outputs.tag }}
+          body_path: docs/releases/${{ steps.v.outputs.tag }}.md
           make_latest: true
           files: |
             site/media/trailer.mp4
