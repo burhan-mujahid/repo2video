@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pyflakes>=3"]
+dev = ["pytest>=8", "pyflakes>=3", "fonttools>=4.47"]
 
 [project.urls]
 Homepage = "https://burhan-mujahid.github.io/repo2video/"
