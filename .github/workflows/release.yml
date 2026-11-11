@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: repo2video ${{ github.ref_name }}
+          body_path: docs/releases/${{ github.ref_name }}.md
+          make_latest: true
+          files: |
+            site/media/trailer.mp4
+            site/media/metro.mp4
+            site/media/quest.mp4
+            site/media/news.mp4
+            site/media/reel.mp4
+            site/media/commander-onboarding.mp4
+            site/media/autoresearch-trailer.mp4
+            site/media/pronunciation.m4a
