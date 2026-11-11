@@ -15,7 +15,7 @@ The CLI finds the facts, writes a first script, voices it, scores it and renders
 repo2video --help || pip install git+https://github.com/burhan-mujahid/repo2video
 ```
 
-Needs Python 3.11+, ffmpeg and Chrome (or `python -m playwright install chromium`). The first voiced render downloads the Kokoro model (~120 MB) to `~/.cache/repo2video`.
+Needs Python 3.11+, ffmpeg and Chrome (or `python -m playwright install chromium`). The first voiced render downloads the Kokoro model (~120 MB) and the spaCy English model (~13 MB) to `~/.cache/repo2video`.
 
 ## 2. Pick the mode
 

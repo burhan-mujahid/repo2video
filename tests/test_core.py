@@ -1,19 +1,21 @@
 """Self-check: analyzer facts, the five show formats, pronunciation, beat-synced timing, sound, exports, a short render.
 Run: python -m pytest tests  (or: python tests/test_core.py)"""
 import base64
+import importlib
 import json
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 from repo2video import exports, sound
 from repo2video.analyze import analyze
 from repo2video.plan import MODES, plan
 from repo2video.render import layout, render
-from repo2video.speech import phonemes, speakable
+from repo2video.speech import ensure_wheel, phonemes, speakable
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -128,8 +130,27 @@ def test_fonts():
     assert wanted and wanted <= {fam for fam, *_ in make_fonts.FONTS}, wanted
 
 
+def test_model_download():
+    # a missing model wheel is unpacked into the cache once and then imports like an installed package
+    tmp = Path(tempfile.mkdtemp())
+    whl = tmp / "r2v_fake_model-1.0-py3-none-any.whl"
+    with zipfile.ZipFile(whl, "w") as z:
+        z.writestr("r2v_fake_model/__init__.py", "X = 1\n")
+        z.writestr("r2v_fake_model-1.0.dist-info/METADATA", "Metadata-Version: 2.1\nName: r2v_fake_model\nVersion: 1.0\n")
+    ensure_wheel("r2v_fake_model", whl.as_uri(), tmp / "cache")
+    import r2v_fake_model
+    from importlib import metadata
+    assert r2v_fake_model.X == 1 and metadata.version("r2v_fake_model") == "1.0"
+    whl.unlink()  # a new process finds the unpacked copy in the cache and downloads nothing
+    sys.path.remove(str(tmp / "cache" / whl.stem))
+    importlib.invalidate_caches()
+    ensure_wheel("r2v_fake_model", whl.as_uri(), tmp / "cache")
+    assert metadata.version("r2v_fake_model") == "1.0"
+
+
 if __name__ == "__main__":
     test_pronunciation()
     test_everything()
     test_fonts()
+    test_model_download()
     print("ok")

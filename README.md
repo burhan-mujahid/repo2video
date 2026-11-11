@@ -119,7 +119,8 @@ caption style. The same facts are told five different ways.
 ## Quick start
 
 **Requirements:** Python 3.11 or 3.12 (the pronunciation library, misaki, does not yet support 3.13), [FFmpeg](https://ffmpeg.org), and Chrome or Chromium. On first use, the
-Kokoro voice model (about 120 MB) is downloaded from GitHub Releases into `~/.cache/repo2video`.
+Kokoro voice model (about 120 MB) and the spaCy English model (about 13 MB) are downloaded from GitHub Releases
+into `~/.cache/repo2video`.
 
 ```sh
 pip install git+https://github.com/burhan-mujahid/repo2video
