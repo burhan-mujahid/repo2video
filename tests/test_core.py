@@ -1,8 +1,11 @@
 """Self-check: analyzer facts, the five show formats, pronunciation, beat-synced timing, sound, exports, a short render.
 Run: python -m pytest tests  (or: python tests/test_core.py)"""
+import base64
 import json
+import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -11,6 +14,8 @@ from repo2video.analyze import analyze
 from repo2video.plan import MODES, plan
 from repo2video.render import layout, render
 from repo2video.speech import phonemes, speakable
+
+ROOT = Path(__file__).resolve().parent.parent
 
 FILES = {
     "README.md": "# tinycli\n\n![badge](https://x/y.svg)\n\nTinycli turns slow manual release chores into one command, without config.\n\n"
@@ -112,7 +117,19 @@ def test_everything():
         assert (out / "preview.gif").stat().st_size > 0 and (out / "soundtrack.wav").exists()
 
 
+def test_fonts():
+    # fonts.js is exactly what docs/make_fonts.py writes, and every font the engine asks for first is bundled
+    sys.path.insert(0, str(ROOT / "docs"))
+    import make_fonts
+    js = (ROOT / "repo2video" / "fonts.js").read_text()
+    assert make_fonts.script([base64.b64decode(b) for b in re.findall(r"base64,([^)]+)\)", js)]) == js
+    engine = (ROOT / "repo2video" / "engine.js").read_text()
+    wanted = set(re.findall(r"""(?:font-family:|font: "|display: ")'?([A-Z][\w ]*?)'?[,;"]""", engine))
+    assert wanted and wanted <= {fam for fam, *_ in make_fonts.FONTS}, wanted
+
+
 if __name__ == "__main__":
     test_pronunciation()
     test_everything()
+    test_fonts()
     print("ok")

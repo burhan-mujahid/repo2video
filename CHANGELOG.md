@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- Reproducible font build: `docs/make_fonts.py` downloads the seven fonts from a pinned commit of google/fonts,
+  subsets them and writes `repo2video/fonts.js` and `site/fonts/*.woff`. `fonttools` joins the `dev` extra.
+
 ## [0.1.0] - 2026-11-11
 
 First public release.
