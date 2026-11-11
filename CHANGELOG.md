@@ -10,6 +10,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Reproducible font build: `docs/make_fonts.py` downloads the seven fonts from a pinned commit of google/fonts,
   subsets them and writes `repo2video/fonts.js` and `site/fonts/*.woff`. `fonttools` joins the `dev` extra.
+- `publish.yml` uploads each release to PyPI with trusted publishing, after the Release workflow succeeds.
+
+### Changed
+
+- Ready for PyPI (`pip install repo2video` from 0.2.0). The spaCy English model is no longer a URL dependency: it is downloaded
+  once (about 13 MB) into `~/.cache/repo2video` on first use, unless it is already installed. spaCy is pinned to 3.8
+  to match the model.
 
 ## [0.1.0] - 2026-11-11
 

@@ -7,9 +7,16 @@ Three layers, each fixing what the one below gets wrong:
 3. overrides(): what misaki misses — noun/verb stress pairs (EXport vs exPORT), "ship it live" (laiv),
    "have you read" (red) — plus a lexicon of tech words (config, README, JSON, nginx…).
 """
+import importlib
+import io
 import os
 import re
+import shutil
+import sys
+import urllib.request
+import zipfile
 from functools import lru_cache
+from importlib import metadata
 
 # ---------------------------------------------------------------- 1. text -> spoken words
 
@@ -198,8 +205,34 @@ def overrides(tokens):
     return tokens
 
 
+SPACY_MODEL = "en_core_web_sm-3.8.0"  # for spacy 3.8, pinned in pyproject.toml
+SPACY_URL = f"https://github.com/explosion/spacy-models/releases/download/{SPACY_MODEL}/{SPACY_MODEL}-py3-none-any.whl"
+
+
+def ensure_wheel(name, url, cache):
+    """Make package `name` importable without pip: if it is not installed, unpack its wheel from `url` into `cache`
+    once and put that folder on sys.path. The wheel's .dist-info makes it look installed to spaCy and misaki."""
+    try:
+        metadata.distribution(name)
+        return
+    except metadata.PackageNotFoundError:
+        pass
+    target = cache / url.rsplit("/", 1)[-1].removesuffix(".whl")
+    if not target.exists():
+        print(f"  downloading {name} (one time)…", flush=True)
+        part = target.with_name(target.name + ".part")
+        shutil.rmtree(part, ignore_errors=True)
+        with urllib.request.urlopen(url, timeout=120) as r:
+            zipfile.ZipFile(io.BytesIO(r.read())).extractall(part)
+        part.rename(target)
+    sys.path.insert(0, str(target))
+    importlib.invalidate_caches()
+
+
 @lru_cache(maxsize=1)
 def g2p():
+    from .render import CACHE
+    ensure_wheel("en_core_web_sm", SPACY_URL, CACHE)
     import espeakng_loader
     from phonemizer.backend.espeak.wrapper import EspeakWrapper
     EspeakWrapper.set_library(espeakng_loader.get_library_path())
